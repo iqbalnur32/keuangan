@@ -15,13 +15,23 @@ Session::checkSession();
 
 $c = new Config();
 $id_user = Session::get('id');
-$listService = $c->query2("SELECT * FROM transaksi_masuk WHERE id_user = '$id_user' ORDER BY tanggal DESC ")->rowObject();
+$listService = $c->query2("SELECT * FROM transaksi_masuk WHERE id_user = '$id_user' AND is_delete = 0 ORDER BY tanggal DESC ")->rowObject();
 
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add-pemasukan'])) 
 {
-    $create = $c->inputTransaksi($_POST);
+
+    // $create = $c->inputTransaksi($_POST);
+    $create = $c->inputTransaksImage($_POST);
     exit();
 }
+
+if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['delete-pemasukan']))
+{
+    $id = $_GET['delete-pemasukan'];
+    $create = $c->deleteByWhere('transaksi_masuk', 'id_transaksi', $id, 'pemasukan-keuangan');
+    exit();
+}
+
 
 // if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['filter'])) 
 // {
@@ -115,10 +125,60 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                                         			<td>Rp. <?= number_format($value->jumlah_pemasukan) ?></td>
                                         			<td><?= $value->tanggal ?></td>
                                         			<td>
+                                                        <a  class="btn btn-primary waves-effect waves-light btn-xl" data-toggle="modal" data-target="#modalDetail<?= $value->id_transaksi ?>">Detail</a>
                                         				<a href="?edit-pemasukan=<?= $value->id_transaksi ?>" class="btn btn-primary waves-effect waves-light btn-xl">Edit</a>
                                         				<a href="?delete-pemasukan=<?= $value->id_transaksi ?>" class="btn btn-primary waves-effect waves-light btn-xl">Delete</a>
                                         			</td>
                                         		</tr>
+                                                <!-- Modal -->
+                                                <div class="modal fade" id="modalDetail<?= $value->id_transaksi ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                  <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                      <div class="modal-header">
+                                                        <h5 class="modal-title" id="exampleModalLabel">Detail Pemasukan <?= $value->name_pemasukan ?></h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                          <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                      </div>
+                                                      <div class="modal-body">
+                                                        <form>
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <div class="form-group">
+                                                                        <label>Name Pemasukan</label>
+                                                                        <input class="form-control" value="<?= $value->name_pemasukan ?>" type="text" name="" disabled="">
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <label>Tanggal Pemasukan</label>
+                                                                        <input class="form-control" value="<?= $value->tanggal ?>" type="date" name="" disabled="">
+                                                                    </div>      
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <div class="form-group">
+                                                                        <label>Total Pemasukan</label>
+                                                                        <input class="form-control" value="Rp. <?= number_format($value->jumlah_pemasukan) ?>" type="text" name="" disabled="">
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <label>Total Pemasukan</label>
+                                                                        <textarea class="form-control" disabled="" cols="5" rows="2"><?= $value->ket_pemasukan ?></textarea>
+                                                                    </div>      
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>Image</label>
+                                                                    <img class="img-fluid" src="<?= $value->image != NULL ? '../assets/images/bukti_pemasukan/'.$value->image : "https://balkes.kemenkeu.go.id/assets/shared/images/image-not-found.png" ?>">
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                      </div>
+                                                      <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
                                         	<?php endforeach ?>
                                         </tbody>
                                     </table>
@@ -158,7 +218,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                 </div>
                 <div class="row">
                 	<div class="col-12">
-                		<form action="" method="POST">
+                		<form action="" method="POST" enctype="multipart/form-data">
 	                		<div class="card" style="border: 2px solid black">
 	                			<div class="card-body">
 	                				<div class="row">
@@ -169,7 +229,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
 	                						</div>
 	                						<div class="form-group">
 	                							<label>Tanggal Transaksi</label>
-	                							<input class="form-control" type="date" name="tanggal">
+	                							<input class="form-control" type="date" name="tanggal" value="<?= date('Y-m-d') ?>">
 	                						</div>
 	                					</div>
 	                					<div class="col-6">
@@ -186,6 +246,14 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
 	                						</div>
 	                					</div>
 	                				</div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label>Image</label>
+                                                <input type="file" class="form-control" name="gambar_bukti">
+                                            </div>
+                                        </div>
+                                    </div>
 	                				<div class="row">
 	                					<div class="col-12">
 	                						<div class="form-group">
@@ -253,15 +321,23 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
 	                				</div>
 	                				<div class="row">
 	                					<div class="col-12">
+                                            <div class="col-12">
+                                                <label>Image</label>
+                                                <input type="file" class="form-control" name="gambar_bukti">
 	                						<div class="form-group">
+                                            </div class="col-12">
 	                							<label>Keterangan Transaksi</label>
 	                							<textarea class="form-control" name="ket_transaksi" placeholder="Keterangan Transksi" rows="4" cols="50"><?= $transkasi->ket_pemasukan ?></textarea>
 	                						</div>
+                                            <div class="col-12">
+                                                <img style="height: 100px; width: auto;" class="img-fluid" src="<?= $transkasi->image != NULL ? '../assets/images/bukti_pemasukan/'.$transkasi->image : "https://balkes.kemenkeu.go.id/assets/shared/images/image-not-found.png" ?>">
+                                            </div>
+                                            <br>
 	                						<div class="float-left">
 	                							<button class="btn btn-primary waves-effect waves-light btn-xl" name="edit-pemasukan" value="edit-pemasukan" >Update</button>
 	                						</div>
 	                					</div>
-	                				</div>		
+	                				</div>
 	                			</div>
 	                		</div>
                 		</form>

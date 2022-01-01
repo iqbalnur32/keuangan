@@ -21,15 +21,23 @@ $id_user = Session::get('id');
 if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['start_date']) && isset($_GET['end_date'])){
     $start_date = $_GET['start_date'];
     $end_date = $_GET['end_date'];
-    $listPengeluaran = $c->query2("SELECT * FROM pengeluaran WHERE id_user = '$id_user' AND tanggal BETWEEN '$start_date' AND '$end_date' ORDER BY tanggal DESC ")->rowObject();
+    $listPengeluaran = $c->query2("SELECT * FROM pengeluaran WHERE id_user = '$id_user' AND tanggal BETWEEN '$start_date' AND '$end_date' AND is_delete = 0 ORDER BY tanggal DESC ")->rowObject();
 }else{
-   $listPengeluaran = $c->query2("SELECT * FROM pengeluaran WHERE id_user = '$id_user' ORDER BY tanggal DESC ")->rowObject();
-}
+   $listPengeluaran = $c->query2("SELECT * FROM pengeluaran WHERE id_user = '$id_user' AND is_delete = 0 ORDER BY tanggal DESC ")->rowObject();
+} 
 $listCategory = $c->readTable('category_pengeluaran', 'code_akun');
 
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add-pengeluaran'])) 
 {
-    $create = $c->inputPengeluran($_POST);
+    // $create = $c->inputPengeluran($_POST);
+    $create = $c->inputTransaksPengeluaranImage($_POST);
+    exit();
+}
+
+if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['delete-pengeluaran']))
+{
+    $id = $_GET['delete-pengeluaran'];
+    $create = $c->deleteByWhere('pengeluaran', 'id_pengeluaran', $id, 'pengeluaran-keuangan');
     exit();
 }
 
@@ -119,10 +127,60 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                                         			<td>Rp. <?= number_format($value->total) ?></td>
                                         			<td><?= $value->tanggal ?></td>
                                         			<td>
+                                                        <a  class="btn btn-primary waves-effect waves-light btn-xl" data-toggle="modal" data-target="#modalDetail<?= $value->id_pengeluaran ?>">Detail</a>
                                         				<a href="?edit-pengeluaran=<?= $value->id_pengeluaran ?>" class="btn btn-primary waves-effect waves-light btn-xl">Edit</a>
                                         				<a href="?delete-pengeluaran=<?= $value->id_pengeluaran ?>" class="btn btn-primary waves-effect waves-light btn-xl">Delete</a>
                                         			</td>
                                         		</tr>
+                                                <!-- Modal -->
+                                                <div class="modal fade" id="modalDetail<?= $value->id_pengeluaran ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                  <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                      <div class="modal-header">
+                                                        <h5 class="modal-title" id="exampleModalLabel">Detail Pemasukan <?= $value->name_pengeluaran ?></h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                          <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                      </div>
+                                                      <div class="modal-body">
+                                                        <form>
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <div class="form-group">
+                                                                        <label>Name Pemasukan</label>
+                                                                        <input class="form-control" value="<?= $value->name_pengeluaran ?>" type="text" name="" disabled="">
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <label>Tanggal Pemasukan</label>
+                                                                        <input class="form-control" value="<?= $value->tanggal ?>" type="date" name="" disabled="">
+                                                                    </div>      
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <div class="form-group">
+                                                                        <label>Total Pemasukan</label>
+                                                                        <input class="form-control" value="Rp. <?= number_format($value->total) ?>" type="text" name="" disabled="">
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <label>Total Pemasukan</label>
+                                                                        <textarea class="form-control" disabled="" cols="5" rows="2"><?= $value->keterangan ?></textarea>
+                                                                    </div>      
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>Image</label>
+                                                                    <img class="img-fluid" src="<?= $value->image != NULL ? '../assets/images/butki_pengeluaran/'.$value->image : "https://balkes.kemenkeu.go.id/assets/shared/images/image-not-found.png" ?>">
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                      </div>
+                                                      <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
                                         	<?php endforeach ?>
                                         </tbody>
                                     </table>
@@ -162,7 +220,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                 </div>
                 <div class="row">
                 	<div class="col-12">
-                		<form action="" method="POST">
+                		<form action="" method="POST" enctype="multipart/form-data">
 	                		<div class="card" style="border: 2px solid black">
 	                			<div class="card-body">
 	                				<div class="row">
@@ -173,7 +231,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
 	                						</div>
 	                						<div class="form-group">
 	                							<label>Tanggal Transaksi Pengeluaran</label>
-	                							<input class="form-control" type="date" name="tanggal">
+	                							<input class="form-control" type="date" name="tanggal" value="<?= date('Y-m-d') ?>">
 	                						</div>
 	                					</div>
 	                					<div class="col-6">
@@ -191,6 +249,14 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
 	                						</div>
 	                					</div>
 	                				</div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label>Image</label>
+                                                <input type="file" class="form-control" name="gambar_bukti">
+                                            </div>
+                                        </div>
+                                    </div>
 	                				<div class="row">
 	                					<div class="col-12">
 	                						<div class="form-group">

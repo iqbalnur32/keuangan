@@ -45,6 +45,17 @@ class Config
 		$this->db = new Databese();
 	}
 
+	public function random_string_idcl($length) {
+	    $key = '';
+	    $keys = array_merge(range(0, 9), range('a', 'z'));
+
+	    for ($i = 0; $i < $length; $i++) {
+	        $key .= strtoupper($keys[array_rand($keys)]);
+	    }
+
+	    return $key;
+	}
+
 	/* Site Url */
 	public function site_url()
     {
@@ -173,8 +184,8 @@ class Config
 		$end_date = !empty($data) ? $data['end_date'] : NULL;
         $id_user = Session::get('id');
 		$sql = "SELECT SUM(jumlah_pemasukan) as ttl_pemasukan from transaksi_masuk"; 
-		if ($start_date != "" && $end_date != "") $sql .= " WHERE tanggal BETWEEN '$start_date' AND '$end_date' AND id_user = '$id_user' ";
-		if($start_date == "" && $end_date == "") $sql .= " WHERE id_user = '$id_user'";
+		if ($start_date != "" && $end_date != "") $sql .= " WHERE tanggal BETWEEN '$start_date' AND '$end_date' AND id_user = '$id_user' AND is_delete = 0 ";
+		if($start_date == "" && $end_date == "") $sql .= " WHERE id_user = '$id_user' AND is_delete = 0 ";
 // 		print_r($sql); die;
 		$query = $this->db->pdo->prepare($sql);
 		$query->execute();
@@ -188,12 +199,74 @@ class Config
 		$end_date = !empty($data) ? $data['end_date'] : NULL;
         $id_user = Session::get('id');
 		$sql = "SELECT SUM(total) as ttl_pemasukan from pengeluaran transaksi_masuk"; 
-		if ($start_date != "" && $end_date != "") $sql .= " WHERE tanggal BETWEEN '$start_date' AND '$end_date' AND id_user = '$id_user' ";
-		if($start_date == "" && $end_date == "") $sql .= " WHERE id_user = '$id_user'";
+		if ($start_date != "" && $end_date != "") $sql .= " WHERE tanggal BETWEEN '$start_date' AND '$end_date' AND id_user = '$id_user' AND is_delete = 0 ";
+		if($start_date == "" && $end_date == "") $sql .= " WHERE id_user = '$id_user' AND is_delete = 0 ";
 		$query = $this->db->pdo->prepare($sql);
 		$query->execute();
 		$result = $query->fetch(PDO::FETCH_OBJ);
 		return $result;
+	}
+
+	public function inputTransaksPengeluaranImage($data)
+	{
+		$tanggal = $data['tanggal'];
+		$nama_file = "KUY-$tanggal-".$this->random_string_idcl(15).".png";
+        $path = "../assets/images/butki_pengeluaran/".$nama_file;
+        if (!$_FILES['gambar_bukti'] && !isset($_FILES)) {
+        	$data = array(
+				'total' => preg_replace('/\D/','', $data['total']), 
+				'tanggal' => $data['tanggal'], 
+				'name_pengeluaran' => $data['name_pengeluaran'], 
+				'id_category_pengeluaran' => $data['nama_category'], 
+				'keterangan' => $data['keterangan'], 
+				'id_user' => Session::get('id'),
+				'is_delete' => 0,
+				'created_date' => date('Y-m-d H:s:i'),
+				'created_by' => Session::get('nama')
+			);
+			
+			$result = $this->insert('pengeluaran', $data);
+			if($result){
+				Notifications::setNotif("Data Pengeluaran Berhasil Di simpan");
+				header("Location: ".WEB."pengeluaran-keuangan");
+				exit();
+			}else{
+				Notifications::setNotif("Data Pengeluaran Gagal Di simpan");
+				header("Location: ".WEB."pengeluaran-keuangan");
+			}
+        }else{
+        	$tmp_file     = $_FILES['gambar_bukti']['tmp_name'];
+            $tipe_file    = $_FILES['gambar_bukti']['type'];
+            $ukuran_file  = $_FILES['gambar_bukti']['size'];
+            if($tipe_file == "image/jpeg" || $tipe_file == "image/png"){
+                if($ukuran_file <= 2000000){
+                    if(move_uploaded_file($tmp_file, $path)){
+						$data = array(
+							'total' => preg_replace('/\D/','', $data['total']), 
+							'tanggal' => $data['tanggal'], 
+							'image' =>$nama_file, 
+							'name_pengeluaran' => $data['name_pengeluaran'], 
+							'id_category_pengeluaran' => $data['nama_category'], 
+							'keterangan' => $data['keterangan'], 
+							'id_user' => Session::get('id'),
+							'is_delete' => 0,
+							'created_date' => date('Y-m-d H:s:i'),
+							'created_by' => Session::get('nama')
+						);
+						
+						$result = $this->insert('pengeluaran', $data);
+						if($result){
+							Notifications::setNotif("Data Pengeluaran Berhasil Di simpan");
+							header("Location: ".WEB."pengeluaran-keuangan");
+							exit();
+						}else{
+							Notifications::setNotif("Data Pengeluaran Gagal Di simpan");
+							header("Location: ".WEB."pengeluaran-keuangan");
+						}
+                    }
+                }
+            }
+        }
 	}
 
 	public function inputPengeluran($data)
@@ -257,8 +330,8 @@ class Config
     public function inputTransaksImage($data)
 	{
 		$tanggal = $data['tanggal'];
-		$nama_file = "KUY-$tanggal-".$this->random_string_idcl(15);
-        $path = "../assets/images/bukti_masuk/".$nama_file.".png";
+		$nama_file = "KUY-$tanggal-".$this->random_string_idcl(15).".png";
+        $path = "../assets/images/bukti_pemasukan/".$nama_file;
         if (!$_FILES['gambar_bukti'] && !isset($_FILES)) {
         	$data = array(
 				'jumlah_pemasukan' => preg_replace('/\D/','', $data['jumlah_pemasukan']), 
@@ -416,6 +489,22 @@ class Config
 		}
 
 
+	}
+
+	public function deleteByWhere($table,$mandatory, $key, $route)
+	{
+		$sql = "UPDATE $table SET is_delete = 1 WHERE $mandatory = '$key'";
+		$query = $this->db->pdo->prepare($sql);
+		$result = $query->execute();
+		if($result){
+			Notifications::setNotif("Delete data Berhasil Di update");
+			header("Location: ".WEB.$route);
+			exit();
+		}else{
+			Notifications::setNotif("Delete data Gagal Di update");
+			header("Location: ".WEB.$route);
+			exit();
+		}
 	}
 
 	// logout

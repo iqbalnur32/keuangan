@@ -3,9 +3,9 @@
 class Databese
 {
 	private $hostdb = "localhost";
-	private $userdb = "inde5327_alwan";
-	private $passdb = "kontol2712";
-	private $namedb = "inde5327_keuangan-team";
+	private $userdb = "root";
+	private $passdb = "";
+	private $namedb = "keuangan-iqbal";
 	public $pdo;
 
 	public function __construct(){
