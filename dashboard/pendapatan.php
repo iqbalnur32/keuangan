@@ -1,6 +1,6 @@
 <?php
 
-$page = "Pemasukan Keuangan";
+$page = "Grafik Keuangan";
 
 ini_set('display_errors',1);
 error_reporting(E_ALL | E_STRICT);
@@ -62,7 +62,7 @@ $tampung_label_category_pengeluaran = array();
 $no =1;
 foreach ($labels_category_pengeluaran as $key) {
     $id_category = $key['id_category_pengeluaran'];
-    $pengeluaran = $c->query2("SELECT * FROM pengeluaran WHERE id_category_pengeluaran = '$id_category' AND id_user = '$id_user' ")->rowObject();
+    $pengeluaran = $c->query2("SELECT * FROM pengeluaran WHERE id_category_pengeluaran = '$id_category' AND id_user = '$id_user' AND is_delete = 0 ")->rowObject();
     $pengeluaran_cok = !empty($pengeluaran) ? count($pengeluaran) : 0;
     $donut_data_cok[] = round($pengeluaran_cok / count($labels_category_pengeluaran) * 100);
     $category_cok[] = !empty($key['nama_category']) ? $key['nama_category'] : 0;
@@ -96,11 +96,11 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                                 <div class="col-md-8">
                                     <h4 class="page-title m-0"><?php echo ucwords($page)?></h4>
                                 </div>
-                                <div class="col-md-4">
+                                <!-- <div class="col-md-4">
                                     <div class="float-right">
                                     	<a href="?tambah-pemasukan=add" class="btn btn-primary waves-effect waves-light btn-xl">Tambah Pemasukan</a>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -110,7 +110,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                 		<div class="card" style="border:2px solid black">
                 			<div class="card-body">
                                 <div class="row">
-                                    <div class="col-4">
+                                    <div class="col-6">
                                         <div class="card" style="background-color: #ef5c6a !important;">
                                             <div class="card-header">
                                                 <h3 class="text-center" style="color: white">Pemasukan All</h3>
@@ -118,7 +118,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-4">
+                                    <div class="col-6">
                                          <div class="card" style="background-color: #ef5c6a !important;">
                                             <div class="card-header">
                                                 <h3 class="text-center" style="color: white">Pengeluaran All</h3>
@@ -126,14 +126,14 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-4">
+                                    <!-- <div class="col-4">
                                         <div class="card" style="background-color: #ef5c6a !important;">
                                             <div class="card-header">
-                                                <h3 class="text-center" style="color: white">Laba Bersih</h3>
+                                                <h3 class="text-center" style="color: white">Laba Bersih All</h3>
                                                 <h3 class="text-center" style="color: white">Rp. <?php echo number_format(array_sum($ttl_pemasukan) - array_sum($ttl_pengeluaran)) ?></h3>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> -->
                                 </div>
                                 <div class="row">
                                     <div class="col-6">
@@ -174,136 +174,6 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                 		</div>
                 	</div>
                 </div>
-        	<?php elseif(isset($_GET['tambah-pemasukan'])): ?>
-        		<div class="row">
-                    <div class="col-sm-12">
-                        <div class="page-title-box">
-                            <div class="row align-items-center">
-                                <div class="col-md-8">
-                                    <h4 class="page-title m-0"><?php echo ucwords($page)?></h4>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="float-right">
-                                    	<a href="pemasukan-keuangan" class="btn btn-primary waves-effect waves-light btn-xl">Back</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                	<div class="col-12">
-                		<form action="" method="POST">
-	                		<div class="card" style="border: 2px solid black">
-	                			<div class="card-body">
-	                				<div class="row">
-	                					<div class="col-6">
-	                						<div class="form-group">
-	                							<label>Jumlah Pemasukan</label>
-	                							<input class="form-control" type="text" name="jumlah_pemasukan" id="rupiah" placeholder="Rp. 0">
-	                						</div>
-	                						<div class="form-group">
-	                							<label>Tanggal Transaksi</label>
-	                							<input class="form-control" type="date" name="tanggal">
-	                						</div>
-	                					</div>
-	                					<div class="col-6">
-	                						<div class="form-group">
-	                							<label>Name Pemasukan</label>
-	                							<input class="form-control" type="text" name="name_pemasukan" placeholder="Beli Baju">
-	                						</div>
-	                						<div class="form-group">
-	                							<label>Jenis Transaksi</label>
-	                							<select class="form-control" name="jenis_transaksi">
-	                								<option value="transfer">Transfer</option>
-	                								<option value="cash">Cash</option>
-	                							</select>
-	                						</div>
-	                					</div>
-	                				</div>
-	                				<div class="row">
-	                					<div class="col-12">
-	                						<div class="form-group">
-	                							<label>Keterangan Transaksi</label>
-	                							<textarea class="form-control" name="ket_transaksi" placeholder="Keterangan Transksi" rows="4" cols="50"></textarea>
-	                						</div>
-	                						<div class="float-left">
-	                							<button class="btn btn-primary waves-effect waves-light btn-xl" name="add-pemasukan" value="add-pemasukan" >Simpan</button>
-	                						</div>
-	                					</div>
-	                				</div>		
-	                			</div>
-	                		</div>
-                		</form>
-                	</div>
-                </div>
-    		<?php elseif(isset($_GET['edit-pemasukan'])): ?>
-    		<?php $id = $_GET['edit-pemasukan'] ;$transkasi = $c->getEachTable('transaksi_masuk', 'id_transaksi', $id); ?>
-    			<div class="row">
-                    <div class="col-sm-12">
-                        <div class="page-title-box">
-                            <div class="row align-items-center">
-                                <div class="col-md-8">
-                                    <h4 class="page-title m-0">Edit Transkasi Pemasukan</h4>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="float-right">
-                                    	<a href="pemasukan-keuangan" class="btn btn-primary waves-effect waves-light btn-xl">Back</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                	<div class="col-12">
-                		<form action="" method="POST">
-	                		<div class="card" style="border: 2px solid black">
-	                			<div class="card-body">
-	                				<div class="row">
-	                					<div class="col-6">
-	                						<div class="form-group">
-	                							<label>Jumlah Pemasukan</label>
-	                							<input type="hidden" name="id_transaksi" value="<?= $transkasi->id_transaksi ?>">
-	                							<input class="form-control" type="text" name="jumlah_pemasukan" id="rupiah" value="Rp. <?= number_format($transkasi->jumlah_pemasukan) ?>" placeholder="Rp. 0">
-	                						</div>
-	                						<div class="form-group">
-	                							<label>Tanggal Transaksi</label>
-	                							<input class="form-control" type="date" name="tanggal" value="<?= $transkasi->tanggal ?>">
-	                						</div>
-	                					</div>
-	                					<div class="col-6">
-	                						<div class="form-group">
-	                							<label>Name Pemasukan</label>
-	                							<input class="form-control" type="text" name="name_pemasukan" placeholder="Beli Baju" value="<?= $transkasi->name_pemasukan ?>">
-	                						</div>
-	                						<div class="form-group">
-	                							<label>Jenis Transaksi</label>
-	                							<select class="form-control" name="jenis_transaksi">
-	                								<option <?= $transkasi->jenis_transaksi == 'transfer' ? "selected" : "" ?> value="transfer">Transfer</option>
-	                								<option <?= $transkasi->jenis_transaksi == 'cash' ? "selected" : "" ?> value="cash">Cash</option>
-	                							</select>
-	                						</div>
-	                					</div>
-	                				</div>
-	                				<div class="row">
-	                					<div class="col-12">
-	                						<div class="form-group">
-	                							<label>Keterangan Transaksi</label>
-	                							<textarea class="form-control" name="ket_transaksi" placeholder="Keterangan Transksi" rows="4" cols="50"><?= $transkasi->ket_pemasukan ?></textarea>
-	                						</div>
-	                						<div class="float-left">
-	                							<button class="btn btn-primary waves-effect waves-light btn-xl" name="edit-pemasukan" value="edit-pemasukan" >Update</button>
-	                						</div>
-	                					</div>
-	                				</div>		
-	                			</div>
-	                		</div>
-                		</form>
-                	</div>
-                </div>
-    		<?php elseif(isset($_GET['delete-pemasukan'])): ?>
-
         	<?php endif ?>
         </div>
     </div>

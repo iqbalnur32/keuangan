@@ -30,7 +30,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                     <div class="page-title-box">
                         <div class="row align-items-center">
                             <div class="col-md-12">
-                                <h4 class="page-title m-0 text-center">Dashboard Keuangan Iqbal</h4>
+                                <h4 class="page-title m-0 text-center">Dashboard Keuangan <?= Session::get('nama') ?></h4>
                             </div>
                         </div>
                     </div>

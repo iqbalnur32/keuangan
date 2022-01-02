@@ -198,7 +198,7 @@ class Config
 		$start_date = !empty($data) ? $data['start_date'] : NULL;
 		$end_date = !empty($data) ? $data['end_date'] : NULL;
         $id_user = Session::get('id');
-		$sql = "SELECT SUM(total) as ttl_pemasukan from pengeluaran transaksi_masuk"; 
+		$sql = "SELECT SUM(total) as ttl_pemasukan from pengeluaran"; 
 		if ($start_date != "" && $end_date != "") $sql .= " WHERE tanggal BETWEEN '$start_date' AND '$end_date' AND id_user = '$id_user' AND is_delete = 0 ";
 		if($start_date == "" && $end_date == "") $sql .= " WHERE id_user = '$id_user' AND is_delete = 0 ";
 		$query = $this->db->pdo->prepare($sql);
@@ -212,7 +212,7 @@ class Config
 		$tanggal = $data['tanggal'];
 		$nama_file = "KUY-$tanggal-".$this->random_string_idcl(15).".png";
         $path = "../assets/images/butki_pengeluaran/".$nama_file;
-        if (!$_FILES['gambar_bukti'] && !isset($_FILES)) {
+        if (!$_FILES['gambar_bukti']['name'] || !isset($_FILES)) {
         	$data = array(
 				'total' => preg_replace('/\D/','', $data['total']), 
 				'tanggal' => $data['tanggal'], 
@@ -239,7 +239,7 @@ class Config
             $tipe_file    = $_FILES['gambar_bukti']['type'];
             $ukuran_file  = $_FILES['gambar_bukti']['size'];
             if($tipe_file == "image/jpeg" || $tipe_file == "image/png"){
-                if($ukuran_file <= 2000000){
+                if($ukuran_file <= 200000000){
                     if(move_uploaded_file($tmp_file, $path)){
 						$data = array(
 							'total' => preg_replace('/\D/','', $data['total']), 
@@ -269,62 +269,102 @@ class Config
         }
 	}
 
-	public function inputPengeluran($data)
+	public function editPengeluaranImage($data)
 	{
-		$data = array(
-			'total' => preg_replace('/\D/','', $data['total']), 
-			'tanggal' => $data['tanggal'], 
-			'name_pengeluaran' => $data['name_pengeluaran'], 
-			'id_category_pengeluaran' => $data['nama_category'], 
-			'keterangan' => $data['keterangan'], 
-			'id_user' => Session::get('id'),
-			'is_delete' => 0,
-			'created_date' => date('Y-m-d H:s:i'),
-			'created_by' => Session::get('nama')
-		);
-		
-		$result = $this->insert('pengeluaran', $data);
-		if($result){
-			Notifications::setNotif("Data Pengeluaran Berhasil Di simpan");
-			header("Location: ".WEB."pengeluaran-keuangan");
-			exit();
-		}else{
-			Notifications::setNotif("Data Pengeluaran Gagal Di simpan");
-			header("Location: ".WEB."pengeluaran-keuangan");
-		}
-			
-	}
+		$tanggal = $data['tanggal'];
+		$id_pengeluaran = $_GET['edit-pengeluaran'];
+		$check_image = $this->getEachTable('pengeluaran', 'id_pengeluaran', $id_pengeluaran);
+		$nama_file = "KUY-$tanggal-".$this->random_string_idcl(15).".png";
+        $path = "../assets/images/butki_pengeluaran/".$nama_file;
 
-	public function editPengeluaran($data)
-	{
-		$data = array(
-			'total' => preg_replace('/\D/','', $data['total']), 
-			'tanggal' => $data['tanggal'], 
-			'name_pengeluaran' => $data['name_pengeluaran'], 
-			'id_category_pengeluaran' => $data['nama_category'], 
-			'keterangan' => $data['keterangan'], 
-			'id_user' => Session::get('id'),
-			'is_delete' => 0,
-			'created_date' => date('Y-m-d H:s:i'),
-			'created_by' => Session::get('nama')
-		);
-
-		$where = array(
-			'id_pengeluaran' => $_GET['edit-pengeluaran']
-		);
-
-		$result = $this->update('pengeluaran', $data, $where);
-		// print_r($result);die;
-		if($result){
-			Notifications::setNotif("Data Pengeluaran Berhasil Di update");
-			header("Location: ".WEB."pengeluaran-keuangan");
-			exit();
-		}else{
-			Notifications::setNotif("Data Pengeluaran Gagal Di update");
-			header("Location: ".WEB."pengeluaran-keuangan");
-			exit();
-		}
-
+        if (!$_FILES['gambar_bukti']['name'] || !isset($_FILES)) {
+        	$data = array(
+				'total' => preg_replace('/\D/','', $data['total']), 
+				'tanggal' => $data['tanggal'], 
+				'name_pengeluaran' => $data['name_pengeluaran'], 
+				'id_category_pengeluaran' => $data['nama_category'], 
+				'keterangan' => $data['keterangan'], 
+				'id_user' => Session::get('id'),
+				'is_delete' => 0,
+				'created_date' => date('Y-m-d H:s:i'),
+				'created_by' => Session::get('nama')
+			);
+			$where = array(
+				'id_pengeluaran' => $id_pengeluaran
+			);
+			$result = $this->update('pengeluaran', $data, $where);
+			// print_r($result);die;
+			if($result){
+				Notifications::setNotif("Data Pengeluaran Berhasil Di update");
+				header("Location: ".WEB."pengeluaran-keuangan");
+				exit();
+			}else{
+				Notifications::setNotif("Data Pengeluaran Gagal Di update");
+				header("Location: ".WEB."pengeluaran-keuangan");
+				exit();
+			}
+        }else{
+			$data = array(
+				'total' => preg_replace('/\D/','', $data['total']), 
+				'tanggal' => $data['tanggal'], 
+				'name_pengeluaran' => $data['name_pengeluaran'], 
+				'image' => $nama_file, 
+				'id_category_pengeluaran' => $data['nama_category'], 
+				'keterangan' => $data['keterangan'], 
+				'id_user' => Session::get('id'),
+				'is_delete' => 0,
+				'created_date' => date('Y-m-d H:s:i'),
+				'created_by' => Session::get('nama')
+			);
+        	$tmp_file     = $_FILES['gambar_bukti']['tmp_name'];
+            $tipe_file    = $_FILES['gambar_bukti']['type'];
+            $ukuran_file  = $_FILES['gambar_bukti']['size'];
+            if($tipe_file == "image/jpeg" || $tipe_file == "image/png"){
+                if($ukuran_file <= 200000000){
+                	if ($check_image->image == NULL) {
+						$where = array(
+							'id_pengeluaran' => $id_pengeluaran
+						);
+						$result = $this->update('pengeluaran', $data, $where);
+						// print_r($result);die;
+						if($result){
+							Notifications::setNotif("Data Pengeluaran Berhasil Di update");
+							header("Location: ".WEB."pengeluaran-keuangan");
+							exit();
+						}else{
+							Notifications::setNotif("Data Pengeluaran Gagal Di update");
+							header("Location: ".WEB."pengeluaran-keuangan");
+							exit();
+						}
+					}else{
+						$path_cok = '../assets/images/butki_pengeluaran/'.$check_image->image;
+						if (file_exists($path_cok)) {
+							unlink($path_cok);
+						}
+	                    if(move_uploaded_file($tmp_file, $path)){
+							$where = array(
+								'id_pengeluaran' => $id_pengeluaran
+							);
+							$result = $this->update('pengeluaran', $data, $where);
+							// print_r($result);die;
+							if($result){
+								Notifications::setNotif("Data Pengeluaran Berhasil Di update");
+								header("Location: ".WEB."pengeluaran-keuangan");
+								exit();
+							}else{
+								Notifications::setNotif("Data Pengeluaran Gagal Di update");
+								header("Location: ".WEB."pengeluaran-keuangan");
+								exit();
+							}
+	                    }else{
+	                    	Notifications::setNotif("File Foto Gagal Di simpan");
+							header("Location: ".WEB."pengeluaran-keuangan");
+							exit();
+	                    }
+					}
+                }
+            }
+        }
 	}
     
     public function inputTransaksImage($data)
@@ -332,7 +372,7 @@ class Config
 		$tanggal = $data['tanggal'];
 		$nama_file = "KUY-$tanggal-".$this->random_string_idcl(15).".png";
         $path = "../assets/images/bukti_pemasukan/".$nama_file;
-        if (!$_FILES['gambar_bukti'] && !isset($_FILES)) {
+        if (!$_FILES['gambar_bukti']['name'] || !isset($_FILES)) {
         	$data = array(
 				'jumlah_pemasukan' => preg_replace('/\D/','', $data['jumlah_pemasukan']), 
 				'tanggal' => $data['tanggal'], 
@@ -358,7 +398,7 @@ class Config
             $tipe_file    = $_FILES['gambar_bukti']['type'];
             $ukuran_file  = $_FILES['gambar_bukti']['size'];
             if($tipe_file == "image/jpeg" || $tipe_file == "image/png"){
-                if($ukuran_file <= 2000000){
+                if($ukuran_file <= 200000000){
                     if(move_uploaded_file($tmp_file, $path)){
 						$data = array(
 							'jumlah_pemasukan' => preg_replace('/\D/','', $data['jumlah_pemasukan']), 
@@ -386,57 +426,96 @@ class Config
             }
         }
 	}
-    
-	public function inputTransaksi($data)
-	{
-		$data = array(
-			'jumlah_pemasukan' => preg_replace('/\D/','', $data['jumlah_pemasukan']), 
-			'tanggal' => $data['tanggal'], 
-			'name_pemasukan' => $data['name_pemasukan'], 
-			'jenis_transaksi' => $data['jenis_transaksi'], 
-			'ket_pemasukan' => $data['ket_transaksi'], 
-			'id_user' => Session::get('id'),
-			'is_delete' => 0
-		);
-		// print_r("Location: ".WEB."/dashboard/pemasukan-keuangan");die;
-		$result = $this->insert('transaksi_masuk', $data);
-		if($result){
-			Notifications::setNotif("Data Transkasi Masuk Berhasil Di simpan");
-			header("Location: ".WEB."pemasukan-keuangan");
-			exit();
-		}else{
-			Notifications::setNotif("Data Transkasi Masuk Gagal Di simpan");
-			header("Location: ".WEB."pemasukan-keuangan");
-			exit();
-		}
-	}
 
-	public function editTransaksi($data)
+	public function editTransaksiImage($data)
 	{
-		$data = array(
-			'jumlah_pemasukan' => preg_replace('/\D/','', $data['jumlah_pemasukan']), 
-			'tanggal' => $data['tanggal'], 
-			'name_pemasukan' => $data['name_pemasukan'], 
-			'jenis_transaksi' => $data['jenis_transaksi'], 
-			'ket_pemasukan' => $data['ket_transaksi'], 
-			'id_user' => Session::get('id'),
-			'is_delete' => 0
-		);
+		$tanggal = $data['tanggal'];
+		$id_transaksi = $_POST['id_transaksi'];
+		$check_image = $this->getEachTable('transaksi_masuk', 'id_transaksi', $id_transaksi);
+		$nama_file = "KUY-$tanggal-".$this->random_string_idcl(15).".png";
+        $path = "../assets/images/bukti_pemasukan/".$nama_file;
 
-		$where = array(
-			'id_transaksi' => $_POST['id_transaksi']
-		);
-		$result = $this->update('transaksi_masuk', $data, $where);
-		// print_r($result);die;
-		if($result){
-			Notifications::setNotif("Data Transkasi Masuk Berhasil Di update");
-			header("Location: ".WEB."pemasukan-keuangan");
-			exit();
-		}else{
-			Notifications::setNotif("Data Transkasi Masuk Gagal Di update");
-			header("Location: ".WEB."pemasukan-keuangan");
-			exit();
-		}
+        if (!$_FILES['gambar_bukti']['name'] || !isset($_FILES)) {
+        	$data = array(
+				'jumlah_pemasukan' => preg_replace('/\D/','', $data['jumlah_pemasukan']), 
+				'tanggal' => $data['tanggal'], 
+				'name_pemasukan' => $data['name_pemasukan'], 
+				'jenis_transaksi' => $data['jenis_transaksi'], 
+				'ket_pemasukan' => $data['ket_transaksi'], 
+				'id_user' => Session::get('id'),
+				'is_delete' => 0
+			);
+			$where = array(
+				'id_transaksi' => $id_transaksi
+			);
+			$result = $this->update('transaksi_masuk', $data, $where);
+			if($result){
+				Notifications::setNotif("Data Transkasi Masuk Berhasil Di simpan");
+				header("Location: ".WEB."pemasukan-keuangan");
+				exit();
+			}else{
+				Notifications::setNotif("Data Transkasi Masuk Gagal Di simpan");
+				header("Location: ".WEB."pemasukan-keuangan");
+				exit();
+			}
+        }else{
+			$data = array(
+				'jumlah_pemasukan' => preg_replace('/\D/','', $data['jumlah_pemasukan']), 
+				'tanggal' => $data['tanggal'], 
+				'image' => $nama_file, 
+				'name_pemasukan' => $data['name_pemasukan'], 
+				'jenis_transaksi' => $data['jenis_transaksi'], 
+				'ket_pemasukan' => $data['ket_transaksi'], 
+				'id_user' => Session::get('id'),
+				'is_delete' => 0
+			);
+        	$tmp_file     = $_FILES['gambar_bukti']['tmp_name'];
+            $tipe_file    = $_FILES['gambar_bukti']['type'];
+            $ukuran_file  = $_FILES['gambar_bukti']['size'];
+            if($tipe_file == "image/jpeg" || $tipe_file == "image/png"){
+                if($ukuran_file <= 200000000){
+                	if ($check_image->image == NULL) {
+						$where = array(
+							'id_transaksi' => $id_transaksi
+						);
+						$result = $this->update('transaksi_masuk', $data, $where);
+						if($result){
+							Notifications::setNotif("Data Transkasi Masuk Berhasil Di simpan");
+							header("Location: ".WEB."pemasukan-keuangan");
+							exit();
+						}else{
+							Notifications::setNotif("Data Transkasi Masuk Gagal Di simpan");
+							header("Location: ".WEB."pemasukan-keuangan");
+							exit();
+						}
+					}else{
+						$path_cok = '../assets/images/bukti_pemasukan/'.$check_image->image;
+						if (file_exists($path_cok)) {
+							unlink($path_cok);
+						}
+	                    if(move_uploaded_file($tmp_file, $path)){
+							$where = array(
+								'id_transaksi' => $id_transaksi
+							);
+							$result = $this->update('transaksi_masuk', $data, $where);
+							if($result){
+								Notifications::setNotif("Data Transkasi Masuk Berhasil Di simpan");
+								header("Location: ".WEB."pemasukan-keuangan");
+								exit();
+							}else{
+								Notifications::setNotif("Data Transkasi Masuk Gagal Di simpan");
+								header("Location: ".WEB."pemasukan-keuangan");
+								exit();
+							}
+	                    }else{
+	                    	Notifications::setNotif("File Foto Gagal Di simpan");
+							header("Location: ".WEB."pemasukan-keuangan");
+							exit();
+	                    }
+					}
+                }
+            }
+        }
 	}
 
 	/*

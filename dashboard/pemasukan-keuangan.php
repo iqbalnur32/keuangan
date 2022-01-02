@@ -41,7 +41,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['delete-pemasukan']))
 
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit-pemasukan'])) 
 {
-    $create = $c->editTransaksi($_POST);
+    $create = $c->editTransaksiImage($_POST);
     exit();
 }
 
@@ -118,7 +118,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                                             </tr>
                                         </thead>
                                         <tbody>
-                                        	<?php $no = 1; foreach ($listService as $key => $value): ?>
+                                        	<?php $no = 1; foreach ((object)$listService as $key => $value): ?>
                                         		<tr>
                                         			<td><?= $no++ ?></td>
                                         			<td><?= $value->name_pemasukan ?></td>
@@ -290,7 +290,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                 </div>
                 <div class="row">
                 	<div class="col-12">
-                		<form action="" method="POST">
+                		<form action="" method="POST" enctype="multipart/form-data">
 	                		<div class="card" style="border: 2px solid black">
 	                			<div class="card-body">
 	                				<div class="row">
@@ -321,15 +321,15 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
 	                				</div>
 	                				<div class="row">
 	                					<div class="col-12">
-                                            <div class="col-12">
+                                            <div class="form-group">
                                                 <label>Image</label>
                                                 <input type="file" class="form-control" name="gambar_bukti">
-	                						<div class="form-group">
-                                            </div class="col-12">
+	                						</div>
+                                            <div class="form-group">
 	                							<label>Keterangan Transaksi</label>
 	                							<textarea class="form-control" name="ket_transaksi" placeholder="Keterangan Transksi" rows="4" cols="50"><?= $transkasi->ket_pemasukan ?></textarea>
 	                						</div>
-                                            <div class="col-12">
+                                            <div class="form-group">
                                                 <img style="height: 100px; width: auto;" class="img-fluid" src="<?= $transkasi->image != NULL ? '../assets/images/bukti_pemasukan/'.$transkasi->image : "https://balkes.kemenkeu.go.id/assets/shared/images/image-not-found.png" ?>">
                                             </div>
                                             <br>
