@@ -54,11 +54,22 @@ for ($bulan=1; $bulan < 13; $bulan++) {
 
 /* Pengeluaran */
 $ttl_tabungan = array();
+$label_tabungan = array();
 for ($bulan=1; $bulan < 13; $bulan++) {
-  $grafik_dc = $c->query(" SELECT sum(total) as ttl_tabungan FROM tabungan WHERE MONTH(tanggal) = '$bulan' AND id_user = '$id_user' AND is_delete = 0 ");
-  $ttl_tabungan[] = !empty($grafik_dc[0]['ttl_tabungan']) ? $grafik_dc[0]['ttl_tabungan'] : 0;
+  $label_tabungan_cok = $c->query2(" SELECT  * FROM tabungan WHERE MONTH(tanggal) = '$bulan' AND id_user = '$id_user' AND is_delete = 0 ")->rowObject();
+  foreach ((object)$label_tabungan_cok as $key) {
+    $id_category_pengeluaran = $key->id_category_pengeluaran ?? 0;
+    $grafik_dc = $c->query(" SELECT  sum(total) as ttl_tabungan FROM tabungan WHERE MONTH(tanggal) = '$bulan' AND id_user = '$id_user' AND id_category_pengeluaran = '$id_category_pengeluaran' AND is_delete = 0 ");
+    $ttl_tabungan[] = !empty($grafik_dc[0]['ttl_tabungan']) ? $grafik_dc[0]['ttl_tabungan'] : 0;
+    $label_category_cok = $c->query2("SELECT  nama_category FROM category_pengeluaran WHERE id_category_pengeluaran = '$id_category_pengeluaran' ")->rowObject();
+    $label_tabungan[] = $label_category_cok[0]->nama_category;
+  }
 }
 
+// echo json_encode($ttl_tabungan); 
+// echo json_encode($label_tabungan); die;
+
+// print_r(json_encode($ttl_tabungan)); die;
 function random_color_part() {
     return str_pad( dechex( mt_rand( 0, 255 ) ), 2, '0', STR_PAD_LEFT);
 }
@@ -200,13 +211,14 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
       
       var label_perbulan = <?= json_encode($labels) ?>;
       var label_category = <?= json_encode($category_cok); ?>;
+      var label_tabungan = <?= json_encode($label_tabungan) ?>;
       var data_pemasukan = <?= json_encode($ttl_pemasukan); ?>;
       var data_pengeluaran = <?= json_encode($ttl_pengeluaran); ?>;
       var data_laba_bersih = <?= json_encode($ttl_laba_bersih); ?>;
       var data_tabungan = <?= json_encode($ttl_tabungan); ?>;
       var data_donut = <?= json_encode($donut_data_cok); ?>;
       var color = <?= json_encode($color_donut) ?>;
-      // console.log(data_donut)
+      // console.log(data_tabungan)
       function getChartPerbulan(data_pemasukan, label_perbulan)
       {
         const data = {
@@ -348,16 +360,17 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
       }
       donutChart(data_donut, label_category)
 
-      function chartTabungan(data_tabungan, label_perbulan) {
+      function chartTabungan(data_tabungan, label_tabungan) {
             const data = {
-              labels: label_perbulan,
+              labels: label_tabungan,
               datasets: [{
                 label: 'Persentae Tabungan',
-                data: data_donut,
+                data: data_tabungan,
                 backgroundColor: color,
                 // hoverOffset: 4
               }]
             };
+            console.log(data_tabungan)
             const config = {
               type: 'bar',
               data: data,
@@ -369,9 +382,9 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                 },
                 plugins: {
                   datalabels: {
-                    color: 'white',
+                    color: 'black',
                     formatter: (val, ctx) => {
-                      return `${val}%`
+                      return `Rp. ${val.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")}`
                     }
                   },
                 } 
@@ -382,7 +395,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                 config
             );
       }
-      chartTabungan(data_donut, label_perbulan)
+      chartTabungan(data_tabungan, label_tabungan)
 
     })
 </script>

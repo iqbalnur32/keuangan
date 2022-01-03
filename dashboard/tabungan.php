@@ -11,6 +11,8 @@ Session::init();
 Session::checkSession();
 // Session::checkRole("1");
 $c = new Config();
+
+$listCategory = $c->readTable('category_pengeluaran', 'code_akun');
 $id_user = Session::get('id');
 if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['start_date']) && isset($_GET['end_date'])){
     $start_date = $_GET['start_date'];
@@ -226,23 +228,27 @@ if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['delete-tabungan']))
 	                							<input class="form-control" type="text" name="name_tabungan" placeholder="Beli Miktorik">
 	                						</div>
 	                						<div class="form-group">
-	                							<label>Keterangan Transaksi</label>
-	                							<textarea class="form-control" name="keterangan" placeholder="Keterangan Transksi" rows="4" cols="50"></textarea>
+	                							<label>Category Pengeluaran</label>
+	                							<select class="form-control" name="nama_category">
+	                								<?php foreach ($listCategory as $key): ?>
+                                                        <option value="<?= $key['id_category_pengeluaran'] ?>"><?= $key['nama_category'] ?></option>
+                                                    <?php endforeach ?>
+	                							</select>
 	                						</div>
 	                					</div>
 	                				</div>
-	                				<div class="row" style="display: none">
+	                				<!-- <div class="row" style="display: none">
 	                					<div class="col-12">
 	                						<label>Image</label>
 	                						<input type="file" name="gambar_bukti" class="form-control">
 	                					</div>
-	                				</div>
+	                				</div> -->
 	                				<div class="row">
 	                					<div class="col-12">
-	                						<!-- <div class="form-group">
+	                						<div class="form-group">
 	                							<label>Keterangan Transaksi</label>
 	                							<textarea class="form-control" name="keterangan" placeholder="Keterangan Transksi" rows="4" cols="50"></textarea>
-	                						</div> -->
+	                						</div>
 	                						<div class="float-left">
 	                							<button class="btn btn-primary waves-effect waves-light btn-xl" name="add-tabungan" value="add-tabungan" >Simpan</button>
 	                						</div>
@@ -293,13 +299,14 @@ if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['delete-tabungan']))
 	                							<label>Name Pemasukan</label>
 	                							<input class="form-control" type="text" name="name_tabungan" placeholder="Beli Baju" value="<?= $transkasi->name_tabungan ?>">
 	                						</div>
-	                						<!-- <div class="form-group">
-	                							<label>Jenis Transaksi</label>
-	                							<select class="form-control" name="jenis_transaksi">
-	                								<option <?= $transkasi->jenis_transaksi == 'transfer' ? "selected" : "" ?> value="transfer">Transfer</option>
-	                								<option <?= $transkasi->jenis_transaksi == 'cash' ? "selected" : "" ?> value="cash">Cash</option>
+	                						<div class="form-group">
+	                							<label>Category Pengeluaran</label>
+	                							<select class="form-control" name="nama_category">
+	                								<?php foreach ($listCategory as $key): ?>
+                                                        <option <?= $key['id_category_pengeluaran'] == $transkasi->id_category_pengeluaran ? "selected" : "" ?> value="<?= $key['id_category_pengeluaran'] ?>"><?= $key['nama_category'] ?></option>
+                                                    <?php endforeach ?>
 	                							</select>
-	                						</div> -->
+	                						</div>
 	                					</div>
 	                				</div>
 	                				<div class="row">

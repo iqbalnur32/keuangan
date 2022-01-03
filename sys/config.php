@@ -218,6 +218,7 @@ class Config
 				'tanggal' => $data['tanggal'], 
 				'name_tabungan' => $data['name_tabungan'],  
 				'keterangan' => $data['keterangan'], 
+				'id_category_pengeluaran' => $data['nama_category'], 
 				'id_user' => Session::get('id'),
 				'is_delete' => 0,
 			);
@@ -242,6 +243,7 @@ class Config
 							'total' => preg_replace('/\D/','', $data['total']), 
 							'tanggal' => $data['tanggal'], 
 							'image' =>$nama_file, 
+							'id_category_pengeluaran' => $data['nama_category'], 
 							'name_tabungan' => $data['name_tabungan'], 
 							'keterangan' => $data['keterangan'], 
 							'id_user' => Session::get('id'),
@@ -275,7 +277,8 @@ class Config
         	$data = array(
 				'total' => preg_replace('/\D/','', $data['total']), 
 				'tanggal' => $data['tanggal'], 
-				'name_tabungan' => $data['name_tabungan'],  
+				'name_tabungan' => $data['name_tabungan'],
+				'id_category_pengeluaran' => $data['nama_category'],   
 				'keterangan' => $data['keterangan'], 
 				'id_user' => Session::get('id'),
 				'is_delete' => 0,
@@ -299,6 +302,7 @@ class Config
 				'total' => preg_replace('/\D/','', $data['total']), 
 				'tanggal' => $data['tanggal'], 
 				'image' => $nama_file, 
+				'id_category_pengeluaran' => $data['nama_category'],   
 				'name_tabungan' => $data['name_tabungan'],  
 				'keterangan' => $data['keterangan'], 
 				'id_user' => Session::get('id'),
