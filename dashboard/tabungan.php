@@ -1,6 +1,6 @@
 <?php
 
-$page = "Pengeluaran Keuangan";
+$page = "Tabungan Keuangan";
 
 ini_set('display_errors',1);
 error_reporting(E_ALL | E_STRICT);
@@ -10,49 +10,34 @@ include '../vendor/autoload.php';
 Session::init();
 Session::checkSession();
 // Session::checkRole("1");
-
-
-
 $c = new Config();
-
-// $listPengeluaran = $c->readTable('pengeluaran', 'tanggal');
 $id_user = Session::get('id');
-
 if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['start_date']) && isset($_GET['end_date'])){
     $start_date = $_GET['start_date'];
     $end_date = $_GET['end_date'];
-    $listPengeluaran = $c->query2("SELECT * FROM pengeluaran WHERE id_user = '$id_user' AND tanggal BETWEEN '$start_date' AND '$end_date' AND is_delete = 0 ORDER BY tanggal DESC ")->rowObject();
+    $listTabungan = $c->query2("SELECT * FROM tabungan WHERE id_user = '$id_user' AND tanggal BETWEEN '$start_date' AND '$end_date' AND is_delete = 0 ORDER BY tanggal DESC ")->rowObject();
 }else{
-   $listPengeluaran = $c->query2("SELECT * FROM pengeluaran WHERE id_user = '$id_user' AND is_delete = 0 ORDER BY tanggal DESC ")->rowObject();
+   $listTabungan = $c->query2("SELECT * FROM tabungan WHERE id_user = '$id_user' AND is_delete = 0 ORDER BY tanggal DESC ")->rowObject();
 } 
-$listCategory = $c->readTable('category_pengeluaran', 'code_akun');
 
-if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add-pengeluaran'])) 
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add-tabungan'])) 
 {
-    // $create = $c->inputPengeluran($_POST);
-    $create = $c->inputTransaksPengeluaranImage($_POST);
+    $create = $c->inputTabungan($_POST);
     exit();
 }
 
-if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['delete-pengeluaran']))
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit-tabungan'])) 
 {
-    $id = $_GET['delete-pengeluaran'];
-    $create = $c->deleteByWhere('pengeluaran', 'id_pengeluaran', $id, 'pengeluaran-keuangan');
+    $create = $c->editTabungan($_POST);
     exit();
 }
 
-if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit-pengeluaran'])) 
+if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['delete-tabungan']))
 {
-    // $create = $c->editPengeluaran($_POST);
-    $create = $c->editPengeluaranImage($_POST);
+    $id = $_GET['delete-tabungan'];
+    $create = $c->deleteByWhere('tabungan', 'id_tabungan', $id, 'tabungan');
     exit();
 }
-
-if(isset($_GET['action']) && $_GET['action'] == 'logout')
-{
-   Session::destroy();
-}
-
 
 ?>
 <style>
@@ -65,9 +50,9 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
 </style>
 <?php include('../include/head.php')?>
     <div class="wrapper">
-        <div class="container-fluid">
-        	<?php if (!isset($_GET['tambah-pengeluaran']) && !isset($_GET['edit-pengeluaran']) && !isset($_GET['delete-pengeluaran']) ): ?>
-	        	<div class="row">
+    	<div class="container-fluid">
+    		<?php if (!isset($_GET['add-tabungan']) && !isset($_GET['edit-tabungan'])): ?>
+    			<div class="row">
                     <div class="col-sm-12">
                         <div class="page-title-box">
                             <div class="row align-items-center">
@@ -76,7 +61,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                                 </div>
                                 <div class="col-md-4">
                                     <div class="float-right">
-                                    	<a href="?tambah-pengeluaran=add" class="btn btn-primary waves-effect waves-light btn-xl">Tambah Pengeluran</a>
+                                    	<a href="?add-tabungan=add" class="btn btn-primary waves-effect waves-light btn-xl">Tambah Tabungan</a>
                                     </div>
                                 </div>
                             </div>
@@ -121,24 +106,24 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                                             </tr>
                                         </thead>
                                         <tbody>
-                                        	<?php $no = 1; foreach ((object)$listPengeluaran as $key => $value): ?>
+                                        	<?php $no = 1; foreach ((object)$listTabungan as $key => $value): ?>
                                         		<tr>
                                         			<td><?= $no++ ?></td>
-                                        			<td><?= $value->name_pengeluaran ?></td>
+                                        			<td><?= $value->name_tabungan ?></td>
                                         			<td>Rp. <?= number_format($value->total) ?></td>
                                         			<td><?= $value->tanggal ?></td>
                                         			<td>
-                                                        <a  class="btn btn-primary waves-effect waves-light btn-xl" data-toggle="modal" data-target="#modalDetail<?= $value->id_pengeluaran ?>">Detail</a>
-                                        				<a href="?edit-pengeluaran=<?= $value->id_pengeluaran ?>" class="btn btn-primary waves-effect waves-light btn-xl">Edit</a>
-                                        				<a href="?delete-pengeluaran=<?= $value->id_pengeluaran ?>" class="btn btn-primary waves-effect waves-light btn-xl">Delete</a>
+                                                        <a  class="btn btn-primary waves-effect waves-light btn-xl" data-toggle="modal" data-target="#modalDetail<?= $value->id_tabungan ?>">Detail</a>
+                                        				<a href="?edit-tabungan=<?= $value->id_tabungan ?>" class="btn btn-primary waves-effect waves-light btn-xl">Edit</a>
+                                        				<a href="?delete-tabungan=<?= $value->id_tabungan ?>" class="btn btn-primary waves-effect waves-light btn-xl">Delete</a>
                                         			</td>
                                         		</tr>
                                                 <!-- Modal -->
-                                                <div class="modal fade" id="modalDetail<?= $value->id_pengeluaran ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                <div class="modal fade" id="modalDetail<?= $value->id_tabungan ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                                   <div class="modal-dialog" role="document">
                                                     <div class="modal-content">
                                                       <div class="modal-header">
-                                                        <h5 class="modal-title" id="exampleModalLabel">Detail Pemasukan <?= $value->name_pengeluaran ?></h5>
+                                                        <h5 class="modal-title" id="exampleModalLabel">Detail Pemasukan <?= $value->name_tabungan ?></h5>
                                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                           <span aria-hidden="true">&times;</span>
                                                         </button>
@@ -149,7 +134,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                                                                 <div class="col-6">
                                                                     <div class="form-group">
                                                                         <label>Name Pemasukan</label>
-                                                                        <input class="form-control" value="<?= $value->name_pengeluaran ?>" type="text" name="" disabled="">
+                                                                        <input class="form-control" value="<?= $value->name_tabungan ?>" type="text" name="" disabled="">
                                                                     </div>
                                                                     <div class="form-group">
                                                                         <label>Tanggal Pemasukan</label>
@@ -202,8 +187,8 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                 		</div>
                 	</div>
                 </div>
-        	<?php elseif(isset($_GET['tambah-pengeluaran'])): ?>
-        		<div class="row">
+            <?php elseif(isset($_GET['add-tabungan'])): ?>
+            	<div class="row">
                     <div class="col-sm-12">
                         <div class="page-title-box">
                             <div class="row align-items-center">
@@ -212,7 +197,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                                 </div>
                                 <div class="col-md-4">
                                     <div class="float-right">
-                                    	<a href="pengeluaran-keuangan" class="btn btn-primary waves-effect waves-light btn-xl">Back</a>
+                                    	<a href="tabungan" class="btn btn-primary waves-effect waves-light btn-xl">Back</a>
                                     </div>
                                 </div>
                             </div>
@@ -227,45 +212,39 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
 	                				<div class="row">
 	                					<div class="col-6">
 	                						<div class="form-group">
-	                							<label>Jumlah Pengeluaran</label>
+	                							<label>Jumlah Tabungan</label>
 	                							<input class="form-control" type="text" name="total" id="rupiah" placeholder="Rp. 0">
 	                						</div>
 	                						<div class="form-group">
-	                							<label>Tanggal Transaksi Pengeluaran</label>
+	                							<label>Tanggal Transaksi Tabungan</label>
 	                							<input class="form-control" type="date" name="tanggal" value="<?= date('Y-m-d') ?>">
 	                						</div>
 	                					</div>
 	                					<div class="col-6">
 	                						<div class="form-group">
-	                							<label>Name Pengeluaran</label>
-	                							<input class="form-control" type="text" name="name_pengeluaran" placeholder="Beli Miktorik">
+	                							<label>Name Tabungan</label>
+	                							<input class="form-control" type="text" name="name_tabungan" placeholder="Beli Miktorik">
 	                						</div>
-	                						<div class="form-group">
-	                							<label>Category Pengeluaran</label>
-	                							<select class="form-control" name="nama_category">
-	                								<?php foreach ($listCategory as $key): ?>
-                                                        <option value="<?= $key['id_category_pengeluaran'] ?>"><?= $key['nama_category'] ?></option>
-                                                    <?php endforeach ?>
-	                							</select>
-	                						</div>
-	                					</div>
-	                				</div>
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <label>Image</label>
-                                                <input type="file" class="form-control" name="gambar_bukti">
-                                            </div>
-                                        </div>
-                                    </div>
-	                				<div class="row">
-	                					<div class="col-12">
 	                						<div class="form-group">
 	                							<label>Keterangan Transaksi</label>
 	                							<textarea class="form-control" name="keterangan" placeholder="Keterangan Transksi" rows="4" cols="50"></textarea>
 	                						</div>
+	                					</div>
+	                				</div>
+	                				<div class="row" style="display: none">
+	                					<div class="col-12">
+	                						<label>Image</label>
+	                						<input type="file" name="gambar_bukti" class="form-control">
+	                					</div>
+	                				</div>
+	                				<div class="row">
+	                					<div class="col-12">
+	                						<!-- <div class="form-group">
+	                							<label>Keterangan Transaksi</label>
+	                							<textarea class="form-control" name="keterangan" placeholder="Keterangan Transksi" rows="4" cols="50"></textarea>
+	                						</div> -->
 	                						<div class="float-left">
-	                							<button class="btn btn-primary waves-effect waves-light btn-xl" name="add-pengeluaran" value="add-pengeluaran" >Simpan</button>
+	                							<button class="btn btn-primary waves-effect waves-light btn-xl" name="add-tabungan" value="add-tabungan" >Simpan</button>
 	                						</div>
 	                					</div>
 	                				</div>		
@@ -274,18 +253,18 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                 		</form>
                 	</div>
                 </div>
-    		<?php elseif(isset($_GET['edit-pengeluaran'])): ?>
-    		<?php $id = $_GET['edit-pengeluaran'] ;$transkasi = $c->getEachTable('pengeluaran', 'id_pengeluaran', $id); ?>
-    			<div class="row">
+            <?php elseif(isset($_GET['edit-tabungan'])): ?>
+            	<?php $id = $_GET['edit-tabungan'] ;$transkasi = $c->getEachTable('tabungan', 'id_tabungan', $id); ?>
+            	<div class="row">
                     <div class="col-sm-12">
                         <div class="page-title-box">
                             <div class="row align-items-center">
                                 <div class="col-md-8">
-                                    <h4 class="page-title m-0">Edit Transkasi Pengeluaran</h4>
+                                    <h4 class="page-title m-0">Edit <?= $page ?></h4>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="float-right">
-                                    	<a href="pemasukan-keuangan" class="btn btn-primary waves-effect waves-light btn-xl">Back</a>
+                                    	<a href="tabungan" class="btn btn-primary waves-effect waves-light btn-xl">Back</a>
                                     </div>
                                 </div>
                             </div>
@@ -298,62 +277,60 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
 	                		<div class="card" style="border: 2px solid black">
 	                			<div class="card-body">
 	                				<div class="row">
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label>Jumlah Pengeluaran</label>
-                                                <input class="form-control" type="text" name="total" id="rupiah" placeholder="Rp. 0" value="Rp. <?= number_format($transkasi->total)?>">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Tanggal Transaksi Pengeluaran</label>
-                                                <input class="form-control" type="date" name="tanggal" value="<?= $transkasi->tanggal ?>">
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label>Name Pengeluaran</label>
-                                                <input class="form-control" type="text" name="name_pengeluaran" placeholder="Beli Miktorik" value="<?= $transkasi->name_pengeluaran ?>">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Category Pengeluaran</label>
-                                                <select class="form-control" name="nama_category">
-                                                    <?php foreach ($listCategory as $key): ?>
-                                                        <option <?= $key['id_category_pengeluaran'] == $transkasi->id_category_pengeluaran ? "selected" : "" ?> value="<?= $key['id_category_pengeluaran'] ?>"><?= $key['nama_category'] ?></option>
-                                                    <?php endforeach ?>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <div class="form-group">
+	                					<div class="col-6">
+	                						<div class="form-group">
+	                							<label>Jumlah Tabungan</label>
+	                							<input type="hidden" name="id_tabungan" value="<?= $transkasi->id_tabungan ?>">
+	                							<input class="form-control" type="text" name="total" id="rupiah" value="Rp. <?= number_format($transkasi->total) ?>" placeholder="Rp. 0">
+	                						</div>
+	                						<div class="form-group">
+	                							<label>Tanggal Transaksi</label>
+	                							<input class="form-control" type="date" name="tanggal" value="<?= $transkasi->tanggal ?>">
+	                						</div>
+	                					</div>
+	                					<div class="col-6">
+	                						<div class="form-group">
+	                							<label>Name Pemasukan</label>
+	                							<input class="form-control" type="text" name="name_tabungan" placeholder="Beli Baju" value="<?= $transkasi->name_tabungan ?>">
+	                						</div>
+	                						<!-- <div class="form-group">
+	                							<label>Jenis Transaksi</label>
+	                							<select class="form-control" name="jenis_transaksi">
+	                								<option <?= $transkasi->jenis_transaksi == 'transfer' ? "selected" : "" ?> value="transfer">Transfer</option>
+	                								<option <?= $transkasi->jenis_transaksi == 'cash' ? "selected" : "" ?> value="cash">Cash</option>
+	                							</select>
+	                						</div> -->
+	                					</div>
+	                				</div>
+	                				<div class="row">
+	                					<div class="col-12">
+                                            <!-- <div class="form-group">
                                                 <label>Image</label>
                                                 <input type="file" class="form-control" name="gambar_bukti">
-                                            </div>
+	                						</div> -->
                                             <div class="form-group">
-                                                <label>Keterangan Transaksi</label>
-                                                <textarea class="form-control" name="keterangan" placeholder="Keterangan Transksi" rows="4" cols="50"><?= $transkasi->keterangan ?></textarea>
-                                            </div>
-                                            <div class="form-group">
-                                                <img style="height: 100px; width: auto;" class="img-fluid" src="<?= $transkasi->image != NULL ? '../assets/images/butki_pengeluaran/'.$transkasi->image : "https://balkes.kemenkeu.go.id/assets/shared/images/image-not-found.png" ?>">
-                                            </div>
+	                							<label>Keterangan Transaksi</label>
+	                							<textarea class="form-control" name="keterangan" placeholder="Keterangan Transksi" rows="4" cols="50"><?= $transkasi->keterangan ?></textarea>
+	                						</div>
+                                            <!-- <div class="form-group">
+                                                <img style="height: 100px; width: auto;" class="img-fluid" src="<?= $transkasi->image != NULL ? '../assets/images/bukti_pemasukan/'.$transkasi->image : "https://balkes.kemenkeu.go.id/assets/shared/images/image-not-found.png" ?>">
+                                            </div> -->
                                             <br>
-                                            <div class="float-left">
-                                                <button class="btn btn-primary waves-effect waves-light btn-xl" name="edit-pengeluaran" value="edit-pengeluaran" >Simpan</button>
-                                            </div>
-                                        </div>
-                                    </div>      	
+	                						<div class="float-left">
+	                							<button class="btn btn-primary waves-effect waves-light btn-xl" name="edit-tabungan" value="edit-tabungan" >Update</button>
+	                						</div>
+	                					</div>
+	                				</div>
 	                			</div>
 	                		</div>
                 		</form>
                 	</div>
                 </div>
-    		<?php elseif(isset($_GET['delete-pengeluaran'])): ?>
-
-        	<?php endif ?>
-        </div>
+			<?php endif ?>	
+    	</div>
     </div>
-<?php include('../include/footer.php')?>
 
+<?php include('../include/footer.php')?>
 <script type="text/javascript">
 	var rupiah = document.getElementById('rupiah');
 	rupiah.addEventListener('keyup', function(e){

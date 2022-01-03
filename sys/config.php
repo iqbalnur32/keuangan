@@ -207,6 +207,153 @@ class Config
 		return $result;
 	}
 
+	public function inputTabungan($data)
+	{
+		$tanggal = $data['tanggal'];
+		$nama_file = "KUY-$tanggal-".$this->random_string_idcl(15).".png";
+        $path = "../assets/images/bukti_tabungan/".$nama_file;
+        if (!$_FILES['gambar_bukti']['name'] || !isset($_FILES)) {
+        	$data = array(
+				'total' => preg_replace('/\D/','', $data['total']), 
+				'tanggal' => $data['tanggal'], 
+				'name_tabungan' => $data['name_tabungan'],  
+				'keterangan' => $data['keterangan'], 
+				'id_user' => Session::get('id'),
+				'is_delete' => 0,
+			);
+			
+			$result = $this->insert('tabungan', $data);
+			if($result){
+				Notifications::setNotif("Data tabungan Berhasil Di simpan");
+				header("Location: ".WEB."tabungan");
+				exit();
+			}else{
+				Notifications::setNotif("Data tabungan Gagal Di simpan");
+				header("Location: ".WEB."tabungan");
+			}
+        }else{
+        	$tmp_file     = $_FILES['gambar_bukti']['tmp_name'];
+            $tipe_file    = $_FILES['gambar_bukti']['type'];
+            $ukuran_file  = $_FILES['gambar_bukti']['size'];
+            if($tipe_file == "image/jpeg" || $tipe_file == "image/png"){
+                if($ukuran_file <= 200000000){
+                    if(move_uploaded_file($tmp_file, $path)){
+						$data = array(
+							'total' => preg_replace('/\D/','', $data['total']), 
+							'tanggal' => $data['tanggal'], 
+							'image' =>$nama_file, 
+							'name_tabungan' => $data['name_tabungan'], 
+							'keterangan' => $data['keterangan'], 
+							'id_user' => Session::get('id'),
+							'is_delete' => 0,
+						);
+						
+						$result = $this->insert('tabungan', $data);
+						if($result){
+							Notifications::setNotif("Data tabungan Berhasil Di simpan");
+							header("Location: ".WEB."tabungan");
+							exit();
+						}else{
+							Notifications::setNotif("Data tabungan Gagal Di simpan");
+							header("Location: ".WEB."tabungan");
+						}
+                    }
+                }
+            }
+        }
+	}
+
+	public function editTabungan($data)
+	{
+		$tanggal = $data['tanggal'];
+		$id_tabungan = $_GET['edit-tabungan'];
+		$check_image = $this->getEachTable('tabungan', 'id_tabungan', $id_tabungan);
+		$nama_file = "KUY-$tanggal-".$this->random_string_idcl(15).".png";
+        $path = "../assets/images/butki_tabungan/".$nama_file;
+
+        if (!$_FILES['gambar_bukti']['name'] || !isset($_FILES)) {
+        	$data = array(
+				'total' => preg_replace('/\D/','', $data['total']), 
+				'tanggal' => $data['tanggal'], 
+				'name_tabungan' => $data['name_tabungan'],  
+				'keterangan' => $data['keterangan'], 
+				'id_user' => Session::get('id'),
+				'is_delete' => 0,
+			);
+			
+			$where = array(
+				'id_tabungan' => $id_tabungan
+			);
+			$result = $this->update('tabungan', $data, $where);
+			// print_r($result);die;
+			if($result){
+				Notifications::setNotif("Data tabungan Berhasil Di simpan");
+				header("Location: ".WEB."tabungan");
+				exit();
+			}else{
+				Notifications::setNotif("Data tabungan Gagal Di simpan");
+				header("Location: ".WEB."tabungan");
+			}
+        }else{
+        	$data = array(
+				'total' => preg_replace('/\D/','', $data['total']), 
+				'tanggal' => $data['tanggal'], 
+				'image' => $nama_file, 
+				'name_tabungan' => $data['name_tabungan'],  
+				'keterangan' => $data['keterangan'], 
+				'id_user' => Session::get('id'),
+				'is_delete' => 0,
+			);
+
+        	$tmp_file     = $_FILES['gambar_bukti']['tmp_name'];
+            $tipe_file    = $_FILES['gambar_bukti']['type'];
+            $ukuran_file  = $_FILES['gambar_bukti']['size'];
+            if($tipe_file == "image/jpeg" || $tipe_file == "image/png"){
+                if($ukuran_file <= 200000000){
+                	if ($check_image->image == NULL) {
+						$where = array(
+							'id_tabungan' => $id_tabungan
+						);
+						$result = $this->update('tabungan', $data, $where);
+						// print_r($result);die;
+						if($result){
+							Notifications::setNotif("Data tabungan Berhasil Di simpan");
+							header("Location: ".WEB."tabungan");
+							exit();
+						}else{
+							Notifications::setNotif("Data tabungan Gagal Di simpan");
+							header("Location: ".WEB."tabungan");
+						}
+					}else{
+						$path_cok = '../assets/images/butki_pengeluaran/'.$check_image->image;
+						if (file_exists($path_cok)) {
+							unlink($path_cok);
+						}
+	                    if(move_uploaded_file($tmp_file, $path)){
+							$where = array(
+								'id_tabungan' => $id_tabungan
+							);
+							$result = $this->update('tabungan', $data, $where);
+							// print_r($result);die;
+							if($result){
+								Notifications::setNotif("Data tabungan Berhasil Di simpan");
+								header("Location: ".WEB."tabungan");
+								exit();
+							}else{
+								Notifications::setNotif("Data tabungan Gagal Di simpan");
+								header("Location: ".WEB."tabungan");
+							}
+	                    }else{
+	                    	Notifications::setNotif("File Foto Gagal Di simpan");
+							header("Location: ".WEB."tabungan");
+							exit();
+	                    }
+					}
+                }
+            }
+        }
+	}
+
 	public function inputTransaksPengeluaranImage($data)
 	{
 		$tanggal = $data['tanggal'];

@@ -43,11 +43,18 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                             <h2 class="m-b-30 m-t-0">Keuangan</h2>
                             <a href="pemasukan-keuangan"><h4 class="text-dark">1. Pemasukan Keuangan</h4></a>
                             <a href="pengeluaran-keuangan"><h4 class="text-dark">2. Pengeluaran Keuangan</h4></a>
+                            <a href="tabungan"><h4 class="text-dark">3. Tabungan Keuangan</h4></a>
                             <a href="pendapatan"><h4 class="text-dark">3. Pendapatan Keuangan</h4></a>
                         </div>
                     </div>
                 </div>
                 <div class="col-6">
+                     <div class="card border-black">
+                        <div class="card-body">
+                            <h2 class="m-b-30 m-t-0">Transaksi ( Comming Soon )</h2>
+                            <a href="#"><h4 class="text-dark">1. PPOB</h4></a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
