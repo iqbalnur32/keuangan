@@ -51,6 +51,14 @@ for ($bulan=1; $bulan < 13; $bulan++) {
   $pengeluaran_all = !empty($pengeluaran[0]['ttl_pengeluaran']) ? $pengeluaran[0]['ttl_pengeluaran'] : 0;
   $ttl_laba_bersih[] = $pemasukan_all - $pengeluaran_all;
 }
+
+/* Pengeluaran */
+$ttl_tabungan = array();
+for ($bulan=1; $bulan < 13; $bulan++) {
+  $grafik_dc = $c->query(" SELECT sum(total) as ttl_tabungan FROM tabungan WHERE MONTH(tanggal) = '$bulan' AND id_user = '$id_user' AND is_delete = 0 ");
+  $ttl_tabungan[] = !empty($grafik_dc[0]['ttl_tabungan']) ? $grafik_dc[0]['ttl_tabungan'] : 0;
+}
+
 function random_color_part() {
     return str_pad( dechex( mt_rand( 0, 255 ) ), 2, '0', STR_PAD_LEFT);
 }
@@ -170,6 +178,13 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
                                         </div>
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                         <div class="card-body">
+                                                <canvas id="chartTabungan"></canvas>  
+                                          </div>
+                                    </div>
+                                </div>
                             </div>
                 		</div>
                 	</div>
@@ -188,6 +203,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
       var data_pemasukan = <?= json_encode($ttl_pemasukan); ?>;
       var data_pengeluaran = <?= json_encode($ttl_pengeluaran); ?>;
       var data_laba_bersih = <?= json_encode($ttl_laba_bersih); ?>;
+      var data_tabungan = <?= json_encode($ttl_tabungan); ?>;
       var data_donut = <?= json_encode($donut_data_cok); ?>;
       var color = <?= json_encode($color_donut) ?>;
       // console.log(data_donut)
@@ -331,6 +347,42 @@ if(isset($_GET['action']) && $_GET['action'] == 'logout')
             );
       }
       donutChart(data_donut, label_category)
+
+      function chartTabungan(data_tabungan, label_perbulan) {
+            const data = {
+              labels: label_perbulan,
+              datasets: [{
+                label: 'Persentae Tabungan',
+                data: data_donut,
+                backgroundColor: color,
+                // hoverOffset: 4
+              }]
+            };
+            const config = {
+              type: 'bar',
+              data: data,
+              options: {
+                responsive:true,
+                maintainAspectRatio: false,
+                legend: {
+                    position: 'left'
+                },
+                plugins: {
+                  datalabels: {
+                    color: 'white',
+                    formatter: (val, ctx) => {
+                      return `${val}%`
+                    }
+                  },
+                } 
+              }
+            };
+            const myChart = new Chart(
+                document.getElementById('chartTabungan'),
+                config
+            );
+      }
+      chartTabungan(data_donut, label_perbulan)
 
     })
 </script>
