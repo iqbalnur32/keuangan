@@ -311,10 +311,10 @@ if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['delete-tabungan']))
 	                				</div>
 	                				<div class="row">
 	                					<div class="col-12">
-                                            <!-- <div class="form-group">
+                                            <div class="form-group">
                                                 <label>Image</label>
                                                 <input type="file" class="form-control" name="gambar_bukti">
-	                						</div> -->
+	                						</div>
                                             <div class="form-group">
 	                							<label>Keterangan Transaksi</label>
 	                							<textarea class="form-control" name="keterangan" placeholder="Keterangan Transksi" rows="4" cols="50"><?= $transkasi->keterangan ?></textarea>
